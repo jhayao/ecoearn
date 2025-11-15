@@ -493,7 +493,19 @@ class _BinDetailsDialogState extends State<BinDetailsDialog> {
       print('✅ Activation response: $response');
 
       if (response['success'] == true) {
-        final sessionId = response['data']['sessionId'];
+        final apiKey = response['data']['apiKey']?.toString();
+        final sessionId = response['data']['sessionId']?.toString();
+        
+        // Validate that we have the required data
+        if (apiKey == null || apiKey.isEmpty) {
+          _showErrorSnackBar('Invalid response from server: missing API key');
+          return;
+        }
+        
+        if (sessionId == null || sessionId.isEmpty) {
+          _showErrorSnackBar('Invalid response from server: missing session ID');
+          return;
+        }
         
         _showSuccessSnackBar('Bin activated successfully!');
         
@@ -508,6 +520,7 @@ class _BinDetailsDialogState extends State<BinDetailsDialog> {
               MaterialPageRoute(
                 builder: (context) => BinStatusScreen(
                   binData: widget.binData,
+                  apiKey: apiKey,
                   sessionId: sessionId,
                 ),
               ),

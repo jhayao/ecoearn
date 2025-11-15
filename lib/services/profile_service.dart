@@ -5,15 +5,12 @@ class ProfileService {
   final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
 
-  Stream<Map<String, dynamic>> getRecyclingStats() {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) return Stream.value({});
-
+  Stream<List<Map<String, dynamic>>> getRecyclingStats(String userId) {
     return _firestore
-        .collection('recycling_stats')
-        .doc(userId)
+        .collection('recycling_requests')
+        .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((doc) => doc.data() ?? {});
+        .map((querySnapshot) => querySnapshot.docs.map((doc) => doc.data()).toList());
   }
 
   Stream<Map<String, dynamic>> getProfileStats() {

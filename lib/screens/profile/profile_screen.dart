@@ -480,6 +480,53 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  Map<String, dynamic> _aggregateRecyclingData(List<Map<String, dynamic>> list) {
+    print('🔄 Aggregating ${list.length} deposit documents');
+    double plasticWeightMonth = 0;
+    int glassItemsMonth = 0;
+    double plasticWeightTotal = 0;
+    int glassItemsTotal = 0;
+
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    print('📅 Current month start: $startOfMonth');
+
+    for (var item in list) {
+      final sessionData = item['sessionData'] as Map<String, dynamic>? ?? {};
+      final plasticCount = (sessionData['plasticCount'] as num?)?.toInt() ?? 0;
+      final tinCount = (sessionData['tinCount'] as num?)?.toInt() ?? 0;
+      final timestamp = item['timestamp'];
+
+      print('📄 Processing document - Plastic: $plasticCount, Tin: $tinCount, Timestamp: $timestamp');
+
+      // Check if this deposit is from this month
+      bool isThisMonth = false;
+      if (timestamp is Timestamp) {
+        final depositDate = timestamp.toDate();
+        isThisMonth = depositDate.isAfter(startOfMonth) || depositDate.isAtSameMomentAs(startOfMonth);
+        print('📅 Deposit date: $depositDate, Is this month: $isThisMonth');
+      }
+
+      // Use session data counts - assuming plasticCount represents weight equivalent
+      plasticWeightTotal += plasticCount.toDouble();
+      glassItemsTotal += tinCount;
+
+      if (isThisMonth) {
+        plasticWeightMonth += plasticCount.toDouble();
+        glassItemsMonth += tinCount;
+      }
+    }
+
+    final result = {
+      'plastic_weight_month': plasticWeightMonth,
+      'glass_items_month': glassItemsMonth,
+      'plastic_weight_total': plasticWeightTotal,
+      'glass_items_total': glassItemsTotal,
+    };
+    print('✅ Final aggregated result: $result');
+    return result;
+  }
+
   TableRow _buildTableRow(
       String material, String month, String total, Color color) {
     return TableRow(
@@ -526,6 +573,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    print('👤 Current user: ${user?.uid ?? 'null'}');
 
     return Scaffold(
       appBar: AppBar(
@@ -559,11 +607,28 @@ class ProfileScreen extends StatelessWidget {
             child: StreamBuilder<Map<String, dynamic>>(
               stream: _profileService.getProfileStats(),
               builder: (context, profileSnapshot) {
-                return StreamBuilder<Map<String, dynamic>>(
-                  stream: _profileService.getRecyclingStats(),
+                print('🔄 Profile data snapshot: ${profileSnapshot.connectionState}');
+                if (profileSnapshot.hasError) {
+                  print('❌ Profile data error: ${profileSnapshot.error}');
+                }
+                if (profileSnapshot.hasData) {
+                  print('✅ Profile data received: ${profileSnapshot.data}');
+                }
+                return StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: user != null ? _profileService.getRecyclingStats(user.uid) : Stream.value([]),
                   builder: (context, recyclingSnapshot) {
+                    print('🔄 Recycling data snapshot: ${recyclingSnapshot.connectionState}');
+                    if (recyclingSnapshot.hasError) {
+                      print('❌ Recycling data error: ${recyclingSnapshot.error}');
+                    }
+                    if (recyclingSnapshot.hasData) {
+                      print('✅ Recycling data received: ${recyclingSnapshot.data?.length ?? 0} documents');
+                    }
                     final profileData = profileSnapshot.data ?? {};
-                    final recyclingData = recyclingSnapshot.data ?? {};
+                    final recyclingList = recyclingSnapshot.data ?? [];
+                    print('🔄 Aggregating recycling data');
+                    print(recyclingSnapshot.data);
+                    final recyclingData = _aggregateRecyclingData(recyclingList);
 
                     final totalPoints = profileData['totalPoints'] ?? 0;
 
@@ -792,7 +857,7 @@ class ProfileScreen extends StatelessWidget {
                                                 FittedBox(
                                                   fit: BoxFit.scaleDown,
                                                   child: Text(
-                                                    '${monthlyData['glass']! + monthlyData['plastic']!} pcs',
+                                                    '${monthlyData['plastic']!.toInt() + monthlyData['glass']!} items',
                                                     style: const TextStyle(
                                                       fontSize: 24,
                                                       fontWeight:
@@ -866,8 +931,8 @@ class ProfileScreen extends StatelessWidget {
                                     ),
                                     _buildTableRow(
                                       'Plastic\nBottles',
-                                      '${monthlyData['plastic']}',
-                                      '${totalData['plastic']}',
+                                      '${monthlyData['plastic']!.toInt()}',
+                                      '${totalData['plastic']!.toInt()}',
                                       const Color(0xFF34A853),
                                     ),
                                     _buildTableRow(

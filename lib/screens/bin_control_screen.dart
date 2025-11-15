@@ -6,11 +6,13 @@ import '../services/bin_service.dart';
 class BinControlScreen extends StatefulWidget {
   final String binId;
   final String sessionId;
+  final String apiKey;
 
   const BinControlScreen({
     super.key,
     required this.binId,
     required this.sessionId,
+    required this.apiKey,
   });
 
   @override
@@ -58,6 +60,7 @@ class _BinControlScreenState extends State<BinControlScreen> {
         binId: widget.binId,
         userId: user.uid,
         sessionId: widget.sessionId,
+        apiKey: widget.apiKey,
       );
 
       setState(() => _isActive = false);

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 
 class BinService {
-  static const String baseUrl = 'http://10.5.0.2:3000/api';
+  static const String baseUrl = 'http://192.168.31.196:3000/api';
   String? _authToken;
 
   void setAuthToken(String token) {
@@ -90,6 +90,7 @@ class BinService {
   Future<Map<String, dynamic>> deactivateBin({
     required String binId,
     required String userId,
+    required String apiKey,
     required String sessionId,
   }) async {
     try {
@@ -104,7 +105,10 @@ class BinService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/bins/deactivate'),
-        headers: _headers,
+        headers: {
+          ..._headers,
+          'x-api-key': apiKey,
+        },
         body: jsonEncode({
           'binId': binId,
           'userId': userId,
@@ -144,9 +148,7 @@ class BinService {
       print('❌ Error in deactivateBin: $e');
       rethrow;
     }
-  }
-
-  /// Send commands to ESP32-CAM via Bluetooth
+  }  /// Send commands to ESP32-CAM via Bluetooth
   Future<void> _sendToESP32CAM(String command) async {
     // TODO: Implement Bluetooth communication with ESP32-CAM
     // This will use flutter_blue_plus or similar package

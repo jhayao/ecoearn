@@ -4,11 +4,13 @@ import '../services/bin_service.dart';
 
 class BinStatusScreen extends StatefulWidget {
   final Map<String, dynamic> binData;
+  final String apiKey;
   final String sessionId;
 
   const BinStatusScreen({
     super.key,
     required this.binData,
+    required this.apiKey,
     required this.sessionId,
   });
 
@@ -62,6 +64,7 @@ class _BinStatusScreenState extends State<BinStatusScreen> {
       final response = await _binService.deactivateBin(
         binId: widget.binData['binId'],
         userId: user.uid,
+        apiKey: widget.apiKey,
         sessionId: widget.sessionId,
       );
 
@@ -196,21 +199,6 @@ class _BinStatusScreenState extends State<BinStatusScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Session ID: ${widget.sessionId.substring(0, 12)}...',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

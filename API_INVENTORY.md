@@ -53,9 +53,14 @@ Future<Map<String, dynamic>> activateBin({...}) async {
   {
     "success": true,
     "data": {
-      "sessionId": "session_abc123",
+      "binId": "bin_001",
+      "name": "Main Street Bin",
+      "status": "active",
+      "currentUser": "abc123xyz789",
       "activatedAt": "2025-11-10T08:30:00Z",
-      "expiresAt": "2025-11-10T09:30:00Z"
+      "sessionId": "session_abc123",
+      "expiresAt": "2025-11-10T09:30:00Z",
+      "apiKey": "BIN_ABC123XYZ789"
     }
   }
   ```
@@ -77,14 +82,16 @@ Future<Map<String, dynamic>> deactivateBin({...}) async {
 - **Endpoint:** `https://your-domain.com/api/bins/deactivate` (⚠️ NEEDS CONFIGURATION)
 - **Method:** POST
 - **Purpose:** Deactivate bin when user finishes recycling
-- **Authentication:** Firebase Auth Bearer token
+- **Authentication:** Firebase Auth Bearer token + API Key header
 - **Request:**
   ```json
   {
-    "binId": "bin_001",
-    "userId": "abc123xyz789",
-    "sessionId": "session_abc123"
+    "userId": "abc123xyz789"
   }
+  ```
+  **Headers:**
+  ```
+  x-api-key: BIN_ABC123XYZ789
   ```
 - **Success Response (200):**
   ```json
