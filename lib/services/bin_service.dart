@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 
 class BinService {
-  static const String baseUrl = 'http://192.168.31.196:3000/api';
+  static const String baseUrl = 'https://ecoearn-web.vercel.app/api';
   String? _authToken;
 
   void setAuthToken(String token) {
